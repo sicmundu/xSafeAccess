@@ -23,122 +23,118 @@ check_gum_installed() {
     fi
 
     echo -e "${YELLOW}xSafeAccess requires \`gum\` for its interactive menu, but it was not found.${NC}"
-    read -rp "Attempt to install gum automatically? (yes/no): " autoinstall_gum_choice
-
-    if [[ "$autoinstall_gum_choice" =~ ^[Yy](es)?$ ]]; then
-        log_message "INFO" "User agreed to automatic gum installation attempt."
-        echo -e "${BLUE}ℹ️ Attempting to detect your OS and package manager to install gum...${NC}"
+    echo -e "${BLUE}ℹ️ Attempting to install gum automatically...${NC}"
+    log_message "INFO" "gum not found. Attempting automatic installation."
         
-        local installed_successfully=false
+    local installed_successfully=false
 
-        # Check for common package managers
-        if command -v apt-get &> /dev/null; then
-            echo "Detected apt-get (Debian/Ubuntu). Attempting to install gum..."
-            log_message "INFO" "Attempting gum install via apt-get."
-            # Add Charmbracelet repo and install gum
-            if sudo mkdir -p /etc/apt/keyrings && curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg && \
-               echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list && \
-               sudo apt-get update -y && sudo apt-get install -y gum; then
-                log_message "SUCCESS" "gum installed successfully via apt-get."
-                print_success "gum installed successfully!"
-                installed_successfully=true
-            else
-                log_message "ERROR" "Failed to install gum via apt-get."
-                print_error "Failed to install gum via apt-get. You may need to run the commands manually or check permissions."
-            fi
-        elif command -v brew &> /dev/null; then
-            echo "Detected Homebrew (macOS/Linux). Attempting to install gum..."
-            log_message "INFO" "Attempting gum install via Homebrew."
-            if brew install gum; then
-                log_message "SUCCESS" "gum installed successfully via Homebrew."
-                print_success "gum installed successfully!"
-                installed_successfully=true
-            else
-                log_message "ERROR" "Failed to install gum via Homebrew."
-                print_error "Failed to install gum via Homebrew."
-            fi
-        elif command -v pacman &> /dev/null; then
-            echo "Detected pacman (Arch Linux). Attempting to install gum..."
-            log_message "INFO" "Attempting gum install via pacman."
-            if sudo pacman -Syu --noconfirm gum; then # -Syu to ensure system is updated, --noconfirm for automation
-                log_message "SUCCESS" "gum installed successfully via pacman."
-                print_success "gum installed successfully!"
-                installed_successfully=true
-            else
-                log_message "ERROR" "Failed to install gum via pacman."
-                print_error "Failed to install gum via pacman."
-            fi
-        elif command -v dnf &> /dev/null; then
-            echo "Detected dnf (Fedora/RHEL). Attempting to install gum..."
-            log_message "INFO" "Attempting gum install via dnf."
-            # For Fedora, gum is often in the main repos or available via copr
-            # This is a common way to install it if directly available:
-            if sudo dnf install -y gum; then
-                log_message "SUCCESS" "gum installed successfully via dnf."
-                print_success "gum installed successfully!"
-                installed_successfully=true
-            else
-                log_message "WARNING" "Could not install gum directly with dnf. Trying Charmbracelet RPM setup..."
-                # Attempt Charmbracelet RPM setup (similar to apt)
-                # See https://github.com/charmbracelet/gum#rpm
-                # Note: This might be more involved than a simple dnf install for some users
-                # For now, let's keep it simpler and fall back to manual if direct dnf fails
-                print_warning "Direct dnf install failed. Manual installation might be needed."
-                # Fallback to manual instructions for now if direct dnf fails
-                # To be more comprehensive: could add the COPR repo commands here.
-            fi
-        elif command -v yum &> /dev/null; then # For older RHEL/CentOS
-             echo "Detected yum (Older RHEL/CentOS). Attempting to install gum..."
-             log_message "INFO" "Attempting gum install via yum (may require EPEL or Charmbracelet RPM setup)."
-             if sudo yum install -y gum; then
-                log_message "SUCCESS" "gum installed successfully via yum."
-                print_success "gum installed successfully!"
-                installed_successfully=true
-             else
-                log_message "WARNING" "Could not install gum directly with yum. Manual installation or EPEL/Charmbracelet repo setup might be needed."
-                print_warning "Direct yum install failed. Manual installation might be needed."
-             fi   
-        elif command -v nix-env &> /dev/null; then
-            echo "Detected Nix. Attempting to install gum..."
-            log_message "INFO" "Attempting gum install via nix-env."
-            if nix-env -iA nixpkgs.gum; then
-                log_message "SUCCESS" "gum installed successfully via nix-env."
-                print_success "gum installed successfully!"
-                installed_successfully=true
-            else
-                log_message "ERROR" "Failed to install gum via nix-env."
-                print_error "Failed to install gum via nix-env."
-            fi    
+    # Check for common package managers
+    if command -v apt-get &> /dev/null; then
+        echo "Detected apt-get (Debian/Ubuntu). Attempting to install gum..."
+        log_message "INFO" "Attempting gum install via apt-get."
+        # Add Charmbracelet repo and install gum
+        if sudo mkdir -p /etc/apt/keyrings && curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg && \
+           echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list && \
+           sudo apt-get update -y && sudo apt-get install -y gum; then
+            log_message "SUCCESS" "gum installed successfully via apt-get."
+            print_success "gum installed successfully!"
+            installed_successfully=true
         else
-            log_message "WARNING" "Could not detect a known package manager (apt, brew, pacman, dnf, yum, nix-env)."
-            print_warning "Could not detect a common package manager."
+            log_message "ERROR" "Failed to install gum via apt-get."
+            print_error "Failed to install gum via apt-get. You may need to run the commands manually or check permissions."
         fi
-
-        if $installed_successfully && command -v gum &> /dev/null; then
-            log_message "INFO" "gum auto-installation successful and verified."
-            return 0
+    elif command -v brew &> /dev/null; then
+        echo "Detected Homebrew (macOS/Linux). Attempting to install gum..."
+        log_message "INFO" "Attempting gum install via Homebrew."
+        if brew install gum; then
+            log_message "SUCCESS" "gum installed successfully via Homebrew."
+            print_success "gum installed successfully!"
+            installed_successfully=true
         else
-            log_message "ERROR" "Automatic installation of gum failed or was not attempted for your system."
-            print_error "Automatic installation of gum failed or was not supported for your detected OS/package manager."
+            log_message "ERROR" "Failed to install gum via Homebrew."
+            print_error "Failed to install gum via Homebrew."
         fi
+    elif command -v pacman &> /dev/null; then
+        echo "Detected pacman (Arch Linux). Attempting to install gum..."
+        log_message "INFO" "Attempting gum install via pacman."
+        if sudo pacman -Syu --noconfirm gum; then # -Syu to ensure system is updated, --noconfirm for automation
+            log_message "SUCCESS" "gum installed successfully via pacman."
+            print_success "gum installed successfully!"
+            installed_successfully=true
+        else
+            log_message "ERROR" "Failed to install gum via pacman."
+            print_error "Failed to install gum via pacman."
+        fi
+    elif command -v dnf &> /dev/null; then
+        echo "Detected dnf (Fedora/RHEL). Attempting to install gum..."
+        log_message "INFO" "Attempting gum install via dnf."
+        # For Fedora, gum is often in the main repos or available via copr
+        # This is a common way to install it if directly available:
+        if sudo dnf install -y gum; then
+            log_message "SUCCESS" "gum installed successfully via dnf."
+            print_success "gum installed successfully!"
+            installed_successfully=true
+        else
+            log_message "WARNING" "Could not install gum directly with dnf. Trying Charmbracelet RPM setup..."
+            # Attempt Charmbracelet RPM setup (similar to apt)
+            # See https://github.com/charmbracelet/gum#rpm
+            # Note: This might be more involved than a simple dnf install for some users
+            # For now, let's keep it simpler and fall back to manual if direct dnf fails
+            print_warning "Direct dnf install failed. Manual installation might be needed."
+            # Fallback to manual instructions for now if direct dnf fails
+            # To be more comprehensive: could add the COPR repo commands here.
+        fi
+    elif command -v yum &> /dev/null; then # For older RHEL/CentOS
+         echo "Detected yum (Older RHEL/CentOS). Attempting to install gum..."
+         log_message "INFO" "Attempting gum install via yum (may require EPEL or Charmbracelet RPM setup)."
+         if sudo yum install -y gum; then
+            log_message "SUCCESS" "gum installed successfully via yum."
+            print_success "gum installed successfully!"
+            installed_successfully=true
+         else
+            log_message "WARNING" "Could not install gum directly with yum. Manual installation or EPEL/Charmbracelet repo setup might be needed."
+            print_warning "Direct yum install failed. Manual installation might be needed."
+         fi   
+    elif command -v nix-env &> /dev/null; then
+        echo "Detected Nix. Attempting to install gum..."
+        log_message "INFO" "Attempting gum install via nix-env."
+        if nix-env -iA nixpkgs.gum; then
+            log_message "SUCCESS" "gum installed successfully via nix-env."
+            print_success "gum installed successfully!"
+            installed_successfully=true
+        else
+            log_message "ERROR" "Failed to install gum via nix-env."
+            print_error "Failed to install gum via nix-env."
+        fi    
     else
-        log_message "INFO" "User declined automatic gum installation."
+        log_message "WARNING" "Could not detect a known package manager (apt, brew, pacman, dnf, yum, nix-env)."
+        print_warning "Could not detect a common package manager."
     fi
 
-    # Fallback to manual instructions if auto-install failed or was declined
-    echo -e "\n${RED}Error: \`gum\` is still not installed or not in your PATH.${NC}"
-    echo -e "${YELLOW}xSafeAccess requires \`gum\` for its interactive menu.${NC}"
-    echo "Please install it manually from: https://github.com/charmbracelet/gum#installation"
-    echo "Common installation methods (if auto-install failed, try these commands directly):"
-    echo "  Debian/Ubuntu: sudo mkdir -p /etc/apt/keyrings && curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg && echo \"deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *\" | sudo tee /etc/apt/sources.list.d/charm.list && sudo apt update && sudo apt install gum"
-    echo "  Homebrew (macOS/Linux): brew install gum"
-    echo "  Arch Linux: sudo pacman -Syu gum"
-    echo "  Fedora/RHEL (dnf): sudo dnf install gum (or follow RPM instructions on gum's GitHub)"
-    echo "  Nix: nix-env -iA nixpkgs.gum"
-    echo "  Windows (Scoop): scoop install gum"
-    echo "Or download a binary from the releases page: https://github.com/charmbracelet/gum/releases"
-    log_message "ERROR" "gum not found, script exiting after providing manual instructions."
-    exit 1
+    if $installed_successfully && command -v gum &> /dev/null; then
+        log_message "INFO" "gum auto-installation successful and verified."
+        return 0
+    else
+        log_message "ERROR" "Automatic installation of gum failed or was not attempted for your system."
+        print_error "Automatic installation of gum failed or was not supported for your detected OS/package manager."
+    fi
+
+    # Fallback to manual instructions if auto-install failed
+    if ! $installed_successfully; then
+        echo -e "\n${RED}Error: \`gum\` could not be installed automatically and is not in your PATH.${NC}"
+        echo -e "${YELLOW}xSafeAccess requires \`gum\` for its interactive menu.${NC}"
+        echo "Please install it manually from: https://github.com/charmbracelet/gum#installation"
+        echo "Common installation methods (if auto-install failed, try these commands directly):"
+        echo "  Debian/Ubuntu: sudo mkdir -p /etc/apt/keyrings && curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg && echo \"deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *\" | sudo tee /etc/apt/sources.list.d/charm.list && sudo apt update && sudo apt install gum"
+        echo "  Homebrew (macOS/Linux): brew install gum"
+        echo "  Arch Linux: sudo pacman -Syu gum"
+        echo "  Fedora/RHEL (dnf): sudo dnf install gum (or follow RPM instructions on gum's GitHub)"
+        echo "  Nix: nix-env -iA nixpkgs.gum"
+        echo "  Windows (Scoop): scoop install gum"
+        echo "Or download a binary from the releases page: https://github.com/charmbracelet/gum/releases"
+        log_message "ERROR" "gum automatic installation failed. Script exiting after providing manual instructions."
+        exit 1
+    fi
 }
 
 # === Global Status Variables ===
