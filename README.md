@@ -2,7 +2,8 @@
 
 `xSafeAccess` is a Bash script designed to simplify and automate the setup of secure remote access to your Linux machine. It provides an interactive, user-friendly interface to install and configure Tailscale, ngrok, and an autossh reverse tunnel, ensuring you can always reach your machine.
 
-![Shell Menu](https://user-images.githubusercontent.com/your_github_id/optional_screenshot_url.png) <!-- Replace with actual screenshot URL if you add one -->
+![image](https://github.com/user-attachments/assets/f2dcb0e5-5180-4981-851b-619a0df2ba98)
+
 
 ## 🚀 Features
 
