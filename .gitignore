@@ -1,0 +1,26 @@
+# Shell script related
+*.log
+*.bak
+*.swp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment files (if any, though not typical for a single script)
+# .env
+
+# IDE specific files
+.idea/
+.vscode/
+*.iml
+
+# Temporary files created by script (if any specific patterns)
+# temp_* 
+
+.cursor
